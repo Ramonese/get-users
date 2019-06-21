@@ -1,66 +1,44 @@
 <template>
   <div id="app">
     <div class="container bg-light">
-      <h1 class="border-bottom h3">Users</h1>
-      
-          
+      <h1 class="border-bottom h2">Users</h1>
+
       <div v-if="loading">
-      <div class="spinner-border text-primary" role="status">
-        <span class="sr-only">Loading...</span>
+        <div class="spinner-border text-primary" role="status">
+          <span class="sr-only">Loading...</span>
+        </div>
+      </div>
+      <div v-else>
+        <SearchForm @search="searchByPhone"/>
+        <div v-if="users.length">
+          <UserList :users="users"/>
+        </div>
+        <div v-else>
+          <p class="alert alert-primary" role="alert">No users found</p>
+        </div>  
       </div>
     </div>
-    <div v-else>
-      <form>
-            <div class="form-group">
-              <div class="row">
-                <div class="col col-md-10 ">
-                  <label for="search" class="sr-only">search users</label>
-                  <input
-                    v-model="searchQuery"
-                    type="text"
-                    class="form-control form-control-sm"
-                    id="search"
-                    aria-describedby="search user"
-                    placeholder="Enter phone number"
-                  >
-                </div>
-                <div class="col col-md-2">
-                  <button
-                    type="submit"
-                    @click.prevent="getUser"
-                    class="btn btn-primary btn-sm"
-                  >Search</button>
-                </div>
-              </div>
-            </div>
-          </form>
-       
-      <UserList :users="users"/>
-    </div>
-
-    </div>
-
   </div>
 </template>
 
 <script>
 import axios from "axios";
+import _orderBy from "lodash";
+import SearchForm from "./components/SearchForm.vue";
 import UserList from "./components/UserList.vue";
 const getUsersUrl = "https://frontend-api-test.staging.netcore.lv/api/users";
 
 export default {
   name: "app",
   components: {
-    UserList
+    UserList, SearchForm
   },
   data: function() {
     return {
       users: [],
-       loading: true,
-      searchQuery: "",
+      loading: true,
       // errorIs:'',
       // errorText:'',
-      
     };
   },
   mounted() {
@@ -70,13 +48,31 @@ export default {
     async getUsers() {
       try {
         const response = await axios.get(getUsersUrl);
+
         if (response.status === 200) {
-          (this.users = response.data), (this.loading = false);
+          //TODO sort users by name
+          let data = response.data;
+          //console.log(data, typeof data )
+          this.users = data;
+          //  console.log( _orderBy(this.users, ['name'], ['asc']))
+          //_orderBy(data, name);
+          this.loading = false;
         }
       } catch (error) {
+        //TODO add error message
         this.loading = false;
       }
-    }
+    },
+    async searchByPhone(input) {
+      try {
+        const response = await axios.get(
+          `${getUsersUrl}/search?phone_number=${input}`
+        );
+          this.users = response.data;
+      } catch (error) {
+        console.log("User not found");
+      }
+    },
   },
   computed: {}
 };
