@@ -2,19 +2,18 @@
   <div id="app">
     <div class="container bg-light pb-5 pt-3">
       <h1 class="border-bottom h2">Users</h1>
-
       <div v-if="loading">
         <div class="spinner-border text-primary" role="status">
           <span class="sr-only">Loading...</span>
         </div>
       </div>
-      <div v-else>
+      <div v-if="!loading">
         <SearchForm @search="searchByPhone"/>
         <div v-if="users.length">
           <UserList :users="users"/>
         </div>
         <div v-else>
-          <p class="alert alert-primary" role="alert">No user found with this phone number</p>
+          <Alert :message="errorText" />
         </div>  
       </div>
     </div>
@@ -24,6 +23,7 @@
 <script>
 import axios from "axios";
 import _orderBy from "lodash";
+import Alert from "./components/Alert.vue";
 import SearchForm from "./components/SearchForm.vue";
 import UserList from "./components/UserList.vue";
 const getUsersUrl = "https://frontend-api-test.staging.netcore.lv/api/users";
@@ -31,14 +31,14 @@ const getUsersUrl = "https://frontend-api-test.staging.netcore.lv/api/users";
 export default {
   name: "app",
   components: {
-    UserList, SearchForm
+    Alert, SearchForm, UserList
   },
   data: function() {
     return {
       users: [],
       loading: true,
-      // errorIs:'',
-      // errorText:'',
+      isError: false,
+      errorText: 'No user found with this phone number'
     };
   },
   mounted() {
@@ -48,18 +48,15 @@ export default {
     async getUsers() {
       try {
         const response = await axios.get(getUsersUrl);
-
         if (response.status === 200) {
-          //TODO sort users by name
           let data = response.data;
-          //console.log(data, typeof data )
-          this.users = data;
-          //  console.log( _orderBy(this.users, ['name'], ['asc']))
-          //_orderBy(data, name);
+          this.users = _.orderBy(data, ['name']);
           this.loading = false;
         }
       } catch (error) {
         //TODO add error message
+        this.errorText = 'No user found'
+        this.isError = true;
         this.loading = false;
       }
     },
@@ -68,8 +65,10 @@ export default {
         const response = await axios.get(
           `${getUsersUrl}/search?phone_number=${input}`
         );
-          this.users = response.data;
+        this.users = _.orderBy(response.data, ['name']);
       } catch (error) {
+        this.errorText = 'No user found',
+        this.isError = true;
       }
     },
   },
