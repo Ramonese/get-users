@@ -49,12 +49,10 @@ export default {
       try {
         const response = await axios.get(getUsersUrl);
         if (response.status === 200) {
-          let data = response.data;
-          this.users = _.orderBy(data, ['name']);
+          this.users = _.orderBy(response.data, ['name']);
           this.loading = false;
         }
       } catch (error) {
-        //TODO add error message
         this.errorText = 'No user found'
         this.isError = true;
         this.loading = false;
@@ -71,8 +69,7 @@ export default {
         this.isError = true;
       }
     },
-  },
-  computed: {}
+  }
 };
 </script>
 
