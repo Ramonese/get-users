@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <div class="container bg-light">
+    <div class="container bg-light pb-5 pt-3">
       <h1 class="border-bottom h2">Users</h1>
 
       <div v-if="loading">
@@ -14,7 +14,7 @@
           <UserList :users="users"/>
         </div>
         <div v-else>
-          <p class="alert alert-primary" role="alert">No users found</p>
+          <p class="alert alert-primary" role="alert">No user found with this phone number</p>
         </div>  
       </div>
     </div>
@@ -70,7 +70,6 @@ export default {
         );
           this.users = response.data;
       } catch (error) {
-        console.log("User not found");
       }
     },
   },
