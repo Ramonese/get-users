@@ -5,19 +5,21 @@
         <div class="col md-auto">
           <label for="searchByPhoneNo" class="sr-only">search users</label>
           <input
-            v-model="searchQuery"
+            v-model.trim="searchQuery"
             @keyup="validatePhoneNo"
             type="text"
             id="searchByPhoneNo"
-            class="form-control form-control-sm"
+            :class="{'is-invalid': !isValid}"
+            class="form-control-sm form-control"
             placeholder="Enter phone number"
           />
-           <div :class="{isvalid: invalid-feedback}">
-          Phone number must consist of + and 0-9
-        </div>
+          <div class="invalid-feedback">Phone number must start with + and consist of 0-9</div>
         </div>
         <div class="col col-auto">
-          <button type="submit" @click="validateForm" class="btn btn-primary btn-sm">Search</button>
+          <button
+            type="submit"
+            class="btn btn-primary btn-sm"
+            :class="{'disabled' : !isValid}">Search</button>
         </div>
       </div>
     </div>
@@ -26,33 +28,28 @@
 
 <script>
 function isPhoneNo(input) {
-  const regex = /[^+0-9]/g;
-  return input.replace(regex, "");
+  const regex = /[+][0-9][0-9]*$/;
+  return input.match(regex) ? true : false;
 }
-//isPhoneNo("+33t  55hhhxx zz###") ;
 export default {
   name: "SearchForm",
   props: ["search"],
   data: function() {
     return {
       searchQuery: "",
-      isValid: false
+      isValid: true
     };
   },
   methods: {
     validatePhoneNo() {
-      this.searchQuery = isPhoneNo(this.searchQuery);
+      let status = isPhoneNo(this.searchQuery);
+      status ? (this.isValid = true) : (this.isValid = false);
     },
-    validateForm() {
-      //alert(this.searchQuery)
-        this.searchQuery ? this.isValid = true : this.isValid = false;
-      },
     onSubmit() {
-      if(this.isValid) {
-        alert("submit form")
+      if (this.isValid) {
         this.$emit("search", this.searchQuery);
         this.searchQuery = "";
-        //this.isValid =false
+        this.isValid = true;
       }
     }
   }
